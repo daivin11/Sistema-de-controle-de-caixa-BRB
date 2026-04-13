@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  BRB CAIXA — index.html
+  =====================================================================
+  Este arquivo é o FRONTEND completo da aplicação.
+  Frontend = tudo que o usuário vê e interage no navegador.
+
+  Estrutura do arquivo:
+    1. <head>   → configurações, fontes, estilos (CSS)
+    2. <body>   → o HTML visível (header, sidebar, conteúdo)
+    3. <script> → a lógica em JavaScript (buscar dados, registrar, etc.)
+
+  Como o frontend conversa com o backend (server.js)?
+  Usando fetch() — uma função do JavaScript que faz requisições HTTP.
+  Exemplo: fetch('/api/operacoes') busca as operações do servidor.
+  =====================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRB Caixa — Conveniência</title>
+
+  <!--
+    Google Fonts: importa a fonte "Plus Jakarta Sans" da internet.
+    Sem isso o navegador usaria a fonte padrão do sistema.
+    weights 400=normal, 500=médio, 600=semi-bold, 700=bold
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /*
+      ===================================================================
+      CSS VARIABLES (variáveis globais de cor)
+      ===================================================================
+      Definidas no :root (raiz do documento), ficam disponíveis em
+      todo o CSS com a função var(--nome-da-variavel).
+
+      Vantagem: se quiser mudar a cor azul do BRB, muda só aqui
+      e afeta o site inteiro automaticamente.
+    */
+    :root {
+      --brb-blue: #003F8A;          /* azul principal do BRB */
+      --brb-blue-dark: #002d63;     /* azul mais escuro (hover) */
+      --brb-blue-light: #e8f0fb;    /* azul bem claro (fundo de badges) */
+      --brb-yellow: #F5A800;        /* amarelo/dourado do BRB */
+      --brb-yellow-light: #fff8e6;  /* amarelo clarinho */
+      --bg: #F0F3F8;                /* fundo geral da página */
+      --surface: #ffffff;           /* fundo de cards/painéis */
+      --surface2: #f7f9fc;          /* fundo de inputs */
+      --border: #dde3ee;            /* cor das bordas */
+      --border2: #c5cfe0;           /* borda mais escura (hover) */
+      --text: #0f1f3d;              /* cor do texto principal */
+      --muted: #6b7a99;             /* texto secundário/apagado */
+      --green: #0e8a4a;             /* cor para depósitos */
+      --green-bg: #e8f7ef;
+      --amber: #b86b00;             /* cor para boletos */
+      --amber-bg: #fff3dc;
+      --red: #c0280e;               /* cor para erros/deletar */
+      --red-bg: #fdecea;
+      --purple: #5b34c4;            /* cor para recargas */
+      --purple-bg: #eeebfb;
+      --teal: #0d7a6e;              /* cor para "outro" */
+      --teal-bg: #e5f5f3;
+    }
+
+    /*
+      Reset básico: remove margin e padding padrão dos elementos.
+      box-sizing: border-box faz o padding não aumentar o tamanho do elemento.
+    */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      min-height: 100vh; /* ocupa pelo menos a altura toda da tela */
+    }
+
+    /*
+      ===================================================================
+      HEADER — barra do topo
+      ===================================================================
+      position: sticky + top: 0 faz o header ficar fixo ao rolar a página.
+      display: flex + align-items: center alinha os filhos lado a lado
+      e centralizados verticalmente.
+    */
+    header {
+      background: var(--brb-blue);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* logo à esq, botões à dir */
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100; /* fica na frente de tudo (maior = mais na frente) */
+      box-shadow: 0 2px 12px rgba(0,63,138,0.18); /* sombra suave abaixo */
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+
+    /* Badge amarelo com "BRB" */
+    .logo-badge {
+      background: var(--brb-yellow);
+      color: var(--brb-blue-dark);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .logo-title { color: #fff; font-size: 15px; font-weight: 500; opacity: 0.9; }
+    .logo-sep { color: rgba(255,255,255,0.3); margin: 0 2px; }
+
+    .header-right { display: flex; align-items: center; gap: 14px; }
+
+    /* Seletor de data */
+    .date-selector { display: flex; align-items: center; gap: 8px; }
+    .date-label { font-size: 12px; color: rgba(255,255,255,0.55); }
+    .date-selector input {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .date-selector input:focus { border-color: var(--brb-yellow); }
+
+    /* Pílula de status do sistema */
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; padding: 5px 12px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      cursor: pointer; color: rgba(255,255,255,0.85);
+      transition: background 0.2s;
+    }
+    .status-pill:hover { background: rgba(255,255,255,0.18); }
+
+    /* Bolinha colorida de status */
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
+    .status-dot.online  { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+    .status-dot.offline { background: #f87171; box-shadow: 0 0 6px #f87171; }
+    .status-dot.checking {
+      animation: blink 1s infinite; /* pisca enquanto verifica */
+      background: var(--brb-yellow);
+    }
+
+    /* Animação de piscar */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /*
+      ===================================================================
+      LAYOUT PRINCIPAL — grid de 2 colunas
+      ===================================================================
+      CSS Grid divide a tela em sidebar (320px fixo) + conteúdo (resto).
+      overflow: hidden evita scroll na área do grid (cada parte tem seu próprio scroll).
+    */
+    .main {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: calc(100vh - 60px); /* altura total menos o header */
+      overflow: hidden;
+    }
+
+    /*
+      ===================================================================
+      SIDEBAR — painel lateral esquerdo
+      ===================================================================
+    */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column; /* filhos empilhados verticalmente */
+      overflow-y: auto;       /* scroll vertical se o conteúdo for grande */
+    }
+
+    .sidebar-section { padding: 18px 16px 12px; border-bottom: 1px solid var(--border); }
+
+    /* Rótulo de seção (texto pequeno em maiúsculas) */
+    .section-label {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px;
+    }
+
+    /*
+      Botões de tipo de operação em grid de 5 colunas iguais.
+      repeat(5, 1fr) = 5 colunas que dividem o espaço igualmente.
+    */
+    .tipo-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+
+    .tipo-btn {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      border-radius: 10px; padding: 9px 4px;
+      cursor: pointer; text-align: center;
+      transition: all 0.15s; /* animação suave em todas as propriedades */
+      font-size: 10px; font-weight: 600; letter-spacing: 0.01em;
+    }
+    .tipo-btn:hover { border-color: var(--brb-blue); color: var(--brb-blue); background: var(--brb-blue-light); }
+    .tipo-icon { font-size: 17px; display: block; margin-bottom: 4px; }
+
+    /* Cada tipo tem sua própria cor quando ativo */
+    .tipo-btn[data-tipo="saque"].active    { color: var(--brb-blue); border-color: var(--brb-blue); background: var(--brb-blue-light); }
+    .tipo-btn[data-tipo="deposito"].active { color: var(--green);    border-color: var(--green);    background: var(--green-bg); }
+    .tipo-btn[data-tipo="boleto"].active   { color: var(--amber);    border-color: var(--amber);    background: var(--amber-bg); }
+    .tipo-btn[data-tipo="recarga"].active  { color: var(--purple);   border-color: var(--purple);   background: var(--purple-bg); }
+    .tipo-btn[data-tipo="outro"].active    { color: var(--teal);     border-color: var(--teal);     background: var(--teal-bg); }
+
+    /* Área do formulário */
+    .form-area { padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; border-bottom: 1px solid var(--border); }
+
+    /* Estilo base de todos os inputs */
+    .form-input {
+      width: 100%; background: var(--surface2);
+      border: 1.5px solid var(--border); color: var(--text);
+      padding: 9px 12px; border-radius: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--brb-blue); background: #fff; }
+    .form-input::placeholder { color: #b0bad0; }
+
+    /* Input de valor com prefixo "R$" sobreposto */
+    .valor-input-wrap { position: relative; }  /* pai com position relative */
+    .valor-prefix {
+      position: absolute;   /* posicionado em relação ao pai */
+      left: 12px; top: 50%; transform: translateY(-50%); /* centralizado verticalmente */
+      color: var(--muted); font-size: 13px; font-weight: 600;
+    }
+    .valor-input-wrap .form-input {
+      padding-left: 30px; /* espaço para o "R$" não sobrepor o texto */
+      font-size: 18px; font-weight: 700; color: var(--brb-blue);
+    }
+
+    /* Linha de operadoras (só aparece quando tipo = recarga) */
+    .operadora-row { display: none; } /* escondida por padrão */
+    .operadora-row.visible { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
+
+    .op-btn {
+      background: var(--surface2); border: 1.5px solid var(--border);
+      color: var(--muted); border-radius: 7px; padding: 6px 4px;
+      cursor: pointer; font-size: 11px; font-weight: 600; text-align: center;
+      transition: all 0.15s;
+    }
+    .op-btn:hover  { border-color: var(--purple); color: var(--purple); }
+    .op-btn.active { color: var(--purple); border-color: var(--purple); background: var(--purple-bg); }
+
+    /* Botão principal de registrar */
+    .btn-registrar {
+      width: 100%; padding: 11px; border-radius: 9px;
+      background: var(--brb-blue); border: none; color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.02em;
+      transition: background 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-registrar:hover  { background: var(--brb-blue-dark); }
+    .btn-registrar:active { transform: scale(0.98); } /* encolhe levemente ao clicar */
+
+    /* Card azul de total do dia */
+    .resumo-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .total-card { background: var(--brb-blue); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+    .total-card .tc-label { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .total-card .tc-valor { font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
+    .total-card .tc-stripe { width: 32px; height: 3px; background: var(--brb-yellow); border-radius: 2px; margin-top: 10px; }
+
+    /* Mini-cards de resumo por tipo (grid 2x2) */
+    .mini-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .mini-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; }
+    .mini-card .mc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+    .mini-card .mc-valor { font-size: 14px; font-weight: 700; }
+    .mc-saque   { color: var(--brb-blue); }
+    .mc-deposito{ color: var(--green); }
+    .mc-boleto  { color: var(--amber); }
+    .mc-recarga { color: var(--purple); }
+
+    /* Seção de meta */
+    .meta-section { padding: 14px 16px; }
+    .meta-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .meta-edit-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      cursor: pointer; font-size: 11px; font-weight: 600; padding: 3px 9px;
+      border-radius: 5px; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
+    }
+    .meta-edit-btn:hover { border-color: var(--brb-blue); color: var(--brb-blue); }
+
+    /* Barra de progresso da meta */
+    .meta-bar-wrap { background: var(--border); border-radius: 99px; height: 7px; overflow: hidden; margin-bottom: 7px; }
+    .meta-bar {
+      height: 100%; border-radius: 99px;
+      background: var(--brb-blue);
+      /* transition faz a barra crescer suavemente ao atualizar */
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+      width: 0%; /* começa em 0, JS atualiza via style="width:X%" */
+    }
+    .meta-bar.quase { background: var(--brb-yellow); } /* 70~99% */
+    .meta-bar.bateu { background: var(--green); }       /* 100% */
+
+    .meta-info { display: flex; justify-content: space-between; }
+    .meta-pct { font-size: 13px; font-weight: 700; color: var(--brb-blue); }
+    .meta-pct.quase { color: var(--amber); }
+    .meta-pct.bateu { color: var(--green); }
+    .meta-valor-str { font-size: 11px; color: var(--muted); }
+
+    .meta-form { display: flex; gap: 6px; margin-top: 10px; }
+    .meta-form input {
+      flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+      color: var(--text); padding: 7px 10px; border-radius: 7px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; outline: none;
+    }
+    .meta-form input:focus { border-color: var(--brb-blue); }
+    .meta-form button {
+      background: var(--brb-yellow); border: none; color: var(--brb-blue-dark);
+      padding: 7px 14px; border-radius: 7px; cursor: pointer;
+      font-size: 12px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: opacity 0.15s;
+    }
+    .meta-form button:hover { opacity: 0.85; }
+    .meta-sem { font-size: 12px; color: var(--muted); text-align: center; padding: 4px 0; }
+
+    /*
+      ===================================================================
+      ÁREA DE CONTEÚDO — lado direito
+      ===================================================================
+    */
+    .content { overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Grid de 5 cards (breakdown por tipo) */
+    .breakdown-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+    .breakdown-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 13px;
+      transition: box-shadow 0.15s;
+    }
+    .breakdown-card:hover { box-shadow: 0 2px 12px rgba(0,63,138,0.08); }
+    .bc-icon  { font-size: 20px; margin-bottom: 8px; }
+    .bc-tipo  { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+    .bc-valor { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .bc-qtd   { font-size: 11px; color: var(--muted); }
+    .bc-saque   { color: var(--brb-blue); }
+    .bc-deposito{ color: var(--green); }
+    .bc-boleto  { color: var(--amber); }
+    .bc-recarga { color: var(--purple); }
+    .bc-outro   { color: var(--teal); }
+
+    /* Cabeçalho da lista de operações */
+    .ops-header { display: flex; align-items: center; justify-content: space-between; }
+    .ops-header h3 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .ops-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* Lista de operações individuais */
+    .ops-list { display: flex; flex-direction: column; gap: 5px; }
+    .op-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px;
+      display: flex; align-items: center; gap: 12px;
+      animation: fadeIn 0.2s ease; /* entrada suave ao adicionar */
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+
+    /* Animação de entrada dos itens */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .op-item:hover { border-color: var(--border2); box-shadow: 0 1px 8px rgba(0,63,138,0.07); }
+
+    /* Ícone colorido à esquerda de cada operação */
+    .op-badge { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .bg-saque   { background: var(--brb-blue-light); }
+    .bg-deposito{ background: var(--green-bg); }
+    .bg-boleto  { background: var(--amber-bg); }
+    .bg-recarga { background: var(--purple-bg); }
+    .bg-outro   { background: var(--teal-bg); }
+
+    .op-info { flex: 1; min-width: 0; } /* min-width: 0 permite o texto truncar */
+    .op-tipo-label { font-size: 12px; font-weight: 700; }
+    .op-desc { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .op-right { text-align: right; flex-shrink: 0; }
+    .op-valor { font-size: 14px; font-weight: 700; color: var(--text); }
+    .op-hora  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    /* Botão de deletar operação */
+    .op-del {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      background: transparent; border: 1px solid transparent;
+      color: #b0bad0; cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .op-del:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+    /* Classes de cor por tipo (usadas dinamicamente no JS) */
+    .tipo-saque   { color: var(--brb-blue); }
+    .tipo-deposito{ color: var(--green); }
+    .tipo-boleto  { color: var(--amber); }
+    .tipo-recarga { color: var(--purple); }
+    .tipo-outro   { color: var(--teal); }
+
+    /* Estado vazio */
+    .empty-state { text-align: center; padding: 70px 20px; color: var(--muted); }
+    .empty-state .big { font-size: 44px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    /* Toast (notificação temporária no canto da tela) */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--brb-blue); color: #fff;
+      padding: 10px 18px; border-radius: 9px;
+      font-size: 13px; font-weight: 500; z-index: 999;
+      transform: translateY(20px); opacity: 0; /* começa invisível e abaixo */
+      transition: all 0.25s;
+      box-shadow: 0 4px 16px rgba(0,63,138,0.25);
+    }
+    .toast.show  { transform: translateY(0); opacity: 1; } /* JS adiciona essa classe */
+    .toast.error { background: var(--red); box-shadow: 0 4px 16px rgba(192,40,14,0.25); }
+  </style>
+</head>
+<body>
+
+<!--
+  =========================================================================
+  HEADER
+  =========================================================================
+-->
+<header>
+  <div class="logo">
+    <span class="logo-badge">BRB</span>
+    <span class="logo-title">Conveniência<span class="logo-sep"> / </span>Caixa</span>
+  </div>
+  <div class="header-right">
+    <!-- Input de data: ao trocar, JS chama carregarDia() -->
+    <div class="date-selector">
+      <span class="date-label">data</span>
+      <input type="date" id="dataSel">
+    </div>
+    <!-- Pílula de status: onclick chama verificarSistema() manualmente -->
+    <div class="status-pill" onclick="verificarSistema()" title="Clique para verificar">
+      <div class="status-dot checking" id="statusDot"></div>
+      <span id="statusTxt">verificando...</span>
+    </div>
+  </div>
+</header>
+
+<!--
+  =========================================================================
+  LAYOUT PRINCIPAL (grid: sidebar + content)
+  =========================================================================
+-->
+<div class="main">
+
+  <!-- ======================== SIDEBAR ======================== -->
+  <aside class="sidebar">
+
+    <!-- Seção: botões de tipo de operação -->
+    <div class="sidebar-section">
+      <div class="section-label">Tipo de operação</div>
+      <div class="tipo-tabs">
+        <!--
+          data-tipo="saque" é um atributo customizado usado pelo JS
+          para saber qual botão está ativo.
+          onclick="selecionarTipo('saque')" chama a função JS ao clicar.
+        -->
+        <button class="tipo-btn active" data-tipo="saque" onclick="selecionarTipo('saque')">
+          <span class="tipo-icon">💳</span>Saque
+        </button>
+        <button class="tipo-btn" data-tipo="deposito" onclick="selecionarTipo('deposito')">
+          <span class="tipo-icon">💰</span>Depósito
+        </button>
+        <button class="tipo-btn" data-tipo="boleto" onclick="selecionarTipo('boleto')">
+          <span class="tipo-icon">📄</span>Boleto
+        </button>
+        <button class="tipo-btn" data-tipo="recarga" onclick="selecionarTipo('recarga')">
+          <span class="tipo-icon">📱</span>Recarga
+        </button>
+        <button class="tipo-btn" data-tipo="outro" onclick="selecionarTipo('outro')">
+          <span class="tipo-icon">⋯</span>Outro
+        </button>
+      </div>
+    </div>
+
+    <!-- Seção: formulário de nova operação -->
+    <div class="form-area">
+      <!-- Wrapper relativo para o prefixo "R$" ficar sobreposto ao input -->
+      <div class="valor-input-wrap">
+        <span class="valor-prefix">R$</span>
+        <!--
+          type="number" só aceita números.
+          step="0.01" permite centavos.
+          autocomplete="off" impede o browser de preencher automaticamente.
+        -->
+        <input class="form-input" type="number" id="inputValor"
+               placeholder="0,00" step="0.01" min="0" autocomplete="off" value="">
+      </div>
+
+      <input class="form-input" type="text" id="inputDesc" placeholder="Descrição (opcional)">
+
+      <!--
+        Linha de operadoras: escondida por padrão (display:none no CSS).
+        JS adiciona classe "visible" quando tipo = recarga.
+      -->
+      <div class="operadora-row" id="operadoraRow">
+        <button class="op-btn" onclick="selecionarOp(this, 'Vivo')">Vivo</button>
+        <button class="op-btn" onclick="selecionarOp(this, 'TIM')">TIM</button>
+        <button class="op-btn" onclick="selecionarOp(this, 'Claro')">Claro</button>
+        <button class="op-btn" onclick="selecionarOp(this, 'Oi')">Oi</button>
+      </div>
+
+      <button class="btn-registrar" onclick="registrar()">
+        <span>＋</span> Registrar operação
+      </button>
+    </div>
+
+    <!-- Seção: resumo de totais -->
+    <div class="resumo-section">
+      <!-- Card azul principal com o total geral -->
+      <div class="total-card">
+        <div class="tc-label">Total do dia</div>
+        <!-- id="totalGeral" → JS atualiza o texto aqui via .textContent -->
+        <div class="tc-valor" id="totalGeral">R$ 0,00</div>
+        <div class="tc-stripe"></div>
+      </div>
+
+      <!-- Mini-cards por tipo -->
+      <div class="mini-cards">
+        <div class="mini-card">
+          <div class="mc-label">Saques</div>
+          <div class="mc-valor mc-saque" id="totalSaque">R$ 0,00</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">Depósitos</div>
+          <div class="mc-valor mc-deposito" id="totalDeposito">R$ 0,00</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">Boletos</div>
+          <div class="mc-valor mc-boleto" id="totalBoleto">R$ 0,00</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">Recargas</div>
+          <div class="mc-valor mc-recarga" id="totalRecarga">R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção: meta diária -->
+    <div class="meta-section">
+      <div class="meta-header">
+        <div class="section-label" style="margin-bottom:0">Meta do dia</div>
+        <button class="meta-edit-btn" onclick="toggleMetaForm()">editar</button>
+      </div>
+      <!--
+        id="metaConteudo" → JS injeta HTML aqui dinamicamente.
+        Pode ser: mensagem "sem meta" OU barra de progresso.
+      -->
+      <div id="metaConteudo">
+        <div class="meta-sem">Nenhuma meta definida.<br>
+          <button class="meta-edit-btn" style="margin-top:6px" onclick="toggleMetaForm()">+ definir meta</button>
+        </div>
+      </div>
+      <!-- Formulário de definir meta: começa escondido -->
+      <div class="meta-form" id="metaForm" style="display:none">
+        <input type="number" id="metaInput" placeholder="Ex: 5000" min="1" step="100">
+        <button onclick="salvarMeta()">salvar</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ======================== CONTEÚDO PRINCIPAL ======================== -->
+  <main class="content">
+    <!-- Cards de breakdown por tipo: JS preenche com innerHTML -->
+    <div class="breakdown-grid" id="breakdownGrid"></div>
+
+    <!-- Cabeçalho da lista -->
+    <div class="ops-header">
+      <h3>Operações do dia</h3>
+      <span class="ops-count" id="opsCount">0 registros</span>
+    </div>
+
+    <!-- Lista de operações: JS preenche com innerHTML -->
+    <div class="ops-list" id="opsList">
+      <div class="empty-state">
+        <div class="big">📋</div>
+        <p>Nenhuma operação registrada hoje.<br>Use o painel ao lado para começar.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast de notificação (JS controla via classe "show") -->
+<div class="toast" id="toast"></div>
+
+
+<!--
+  =========================================================================
+  JAVASCRIPT
+  =========================================================================
+  Todo o JS fica aqui no final do body para garantir que o HTML
+  já foi carregado quando o script executar.
+-->
+<script>
+
+  // -----------------------------------------------------------------------
+  // VARIÁVEIS GLOBAIS
+  // Ficam fora das funções para serem acessíveis em toda a página.
+  // -----------------------------------------------------------------------
+  let tipoAtual = 'saque';   // tipo de operação selecionado no momento
+  let operadoraAtual = '';    // operadora de recarga selecionada (ou vazio)
+  let metaAtual = 0;          // valor da meta diária (0 = sem meta)
+
+  /*
+    Objeto com as informações de cada tipo de operação.
+    Chave = nome do tipo, valor = { icon, label, cor }
+    Usado para montar cards e lista de operações dinamicamente.
+  */
+  const TIPOS = {
+    saque:    { icon: '💳', label: 'Saque',    cor: 'saque' },
+    deposito: { icon: '💰', label: 'Depósito', cor: 'deposito' },
+    boleto:   { icon: '📄', label: 'Boleto',   cor: 'boleto' },
+    recarga:  { icon: '📱', label: 'Recarga',  cor: 'recarga' },
+    outro:    { icon: '⋯',  label: 'Outro',    cor: 'outro' }
+  };
+
+
+  // -----------------------------------------------------------------------
+  // FUNÇÕES UTILITÁRIAS
+  // -----------------------------------------------------------------------
+
+  /* Retorna a data de hoje no formato YYYY-MM-DD (padrão do input type=date) */
+  function dataHoje() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  /*
+    Formata um número para moeda brasileira.
+    Ex: 1500.5 → "R$ 1.500,50"
+    toLocaleString('pt-BR') cuida dos separadores de milhar e decimal.
+  */
+  function formatarReal(v) {
+    return 'R$ ' + Number(v).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+
+  // -----------------------------------------------------------------------
+  // FUNÇÕES DE INTERAÇÃO COM A SIDEBAR
+  // -----------------------------------------------------------------------
+
+  /*
+    Chamada ao clicar num botão de tipo (Saque, Depósito, etc.).
+    1. Atualiza a variável global tipoAtual
+    2. Adiciona/remove classe "active" nos botões
+    3. Mostra/esconde a linha de operadoras (só para Recarga)
+  */
+  function selecionarTipo(tipo) {
+    tipoAtual = tipo;
+
+    // querySelectorAll retorna todos os botões de tipo
+    document.querySelectorAll('.tipo-btn').forEach(b => {
+      // classList.toggle(classe, condição) adiciona se true, remove se false
+      b.classList.toggle('active', b.dataset.tipo === tipo);
+    });
+
+    // Mostra linha de operadoras só se for recarga
+    document.getElementById('operadoraRow')
+      .classList.toggle('visible', tipo === 'recarga');
+
+    // Limpa operadora ao trocar de tipo
+    if (tipo !== 'recarga') operadoraAtual = '';
+  }
+
+  /*
+    Chamada ao clicar em Vivo, TIM, Claro ou Oi.
+    "this" é o próprio botão clicado — passado como parâmetro btn.
+  */
+  function selecionarOp(btn, op) {
+    operadoraAtual = op;
+    document.querySelectorAll('.op-btn').forEach(b => {
+      b.classList.toggle('active', b === btn);
+    });
+  }
+
+  /*
+    Exibe uma notificação temporária no canto inferior direito.
+    Adiciona classe "show" para tornar visível, remove após 2.5s.
+  */
+  function toast(msg, tipo = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (tipo === 'error' ? 'error' : '');
+    setTimeout(() => { t.className = 'toast'; }, 2500);
+  }
+
+  /* Mostra/esconde o formulário de definir meta */
+  function toggleMetaForm() {
+    const f = document.getElementById('metaForm');
+    const aberto = f.style.display === 'flex';
+    f.style.display = aberto ? 'none' : 'flex';
+    if (!aberto) document.getElementById('metaInput').focus();
+  }
+
+
+  // -----------------------------------------------------------------------
+  // FUNÇÕES DE API (comunicação com o server.js)
+  // -----------------------------------------------------------------------
+  /*
+    Todas usam fetch() + async/await:
+    - async function = função assíncrona (não trava a página enquanto espera)
+    - await = espera a resposta antes de continuar
+    - fetch(url) = faz uma requisição HTTP para o servidor
+  */
+
+  /*
+    Registra uma nova operação.
+    Lê os valores dos inputs, manda um POST para /api/operacoes,
+    limpa o formulário e recarrega os dados do dia.
+  */
+  async function registrar() {
+    const valor = parseFloat(document.getElementById('inputValor').value);
+
+    // Validação: impede registro sem valor
+    if (!valor || valor <= 0) {
+      toast('Informe um valor válido', 'error');
+      return; // para a função aqui
+    }
+
+    const body = {
+      tipo: tipoAtual,
+      valor,
+      descricao: document.getElementById('inputDesc').value,
+      operadora: operadoraAtual
+    };
+
+    // POST para o backend com o corpo em JSON
+    const r = await fetch('/api/operacoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body) // converte objeto JS para string JSON
+    });
+
+    if (r.ok) {
+      // Limpa os campos após sucesso
+      document.getElementById('inputValor').value = '';
+      document.getElementById('inputDesc').value = '';
+      toast(TIPOS[tipoAtual].label + ' registrado ✓');
+      carregarDia(); // atualiza a tela com os novos dados
+    } else {
+      toast('Erro ao registrar', 'error');
+    }
+  }
+
+  /*
+    Remove uma operação pelo ID.
+    Chama DELETE /api/operacoes/:id e recarrega os dados.
+  */
+  async function deletar(id) {
+    await fetch('/api/operacoes/' + id, { method: 'DELETE' });
+    carregarDia();
+  }
+
+  /*
+    Carrega o resumo do dia selecionado e atualiza toda a tela.
+    Chama GET /api/resumo?data=YYYY-MM-DD
+  */
+  async function carregarDia() {
+    const data = document.getElementById('dataSel').value;
+    const r = await fetch('/api/resumo?data=' + data);
+    const d = await r.json(); // converte resposta JSON para objeto JS
+
+    // Atualiza total geral
+    document.getElementById('totalGeral').textContent = formatarReal(d.totalGeral);
+    document.getElementById('opsCount').textContent =
+      d.totalOps + ' registro' + (d.totalOps !== 1 ? 's' : '');
+
+    // Atualiza barra de meta com o total atual
+    renderizarMeta(d.totalGeral);
+
+    // Atualiza mini-cards de cada tipo
+    const nomes = {
+      saque: 'totalSaque', deposito: 'totalDeposito',
+      boleto: 'totalBoleto', recarga: 'totalRecarga'
+    };
+    Object.entries(nomes).forEach(([tipo, id]) => {
+      document.getElementById(id).textContent =
+        formatarReal(d.resumo[tipo]?.total || 0);
+      // ?.total = optional chaining: se d.resumo[tipo] for undefined, retorna undefined (não dá erro)
+    });
+
+    // Monta os cards de breakdown com template literals (crase + ${})
+    const grid = document.getElementById('breakdownGrid');
+    grid.innerHTML = Object.entries(TIPOS).map(([tipo, info]) => {
+      const res = d.resumo[tipo] || { quantidade: 0, total: 0 };
+      return `<div class="breakdown-card">
+        <div class="bc-icon">${info.icon}</div>
+        <div class="bc-tipo">${info.label}</div>
+        <div class="bc-valor bc-${info.cor}">${formatarReal(res.total)}</div>
+        <div class="bc-qtd">${res.quantidade} operaç${res.quantidade === 1 ? 'ão' : 'ões'}</div>
+      </div>`;
+    }).join(''); // join('') une o array de strings em uma só
+
+    // Monta a lista de operações
+    const lista = document.getElementById('opsList');
+    if (!d.operacoes.length) {
+      lista.innerHTML = `<div class="empty-state"><div class="big">📋</div>
+        <p>Nenhuma operação registrada hoje.<br>Use o painel ao lado para começar.</p></div>`;
+      return;
+    }
+
+    // [...d.operacoes].reverse() cria uma cópia invertida (mais recente primeiro)
+    lista.innerHTML = [...d.operacoes].reverse().map(op => {
+      const t = TIPOS[op.tipo] || TIPOS.outro;
+      const sub = [op.descricao, op.operadora].filter(Boolean).join(' · ') || t.label;
+      // filter(Boolean) remove strings vazias do array
+      return `<div class="op-item">
+        <div class="op-badge bg-${t.cor}">${t.icon}</div>
+        <div class="op-info">
+          <div class="op-tipo-label tipo-${t.cor}">${t.label}${op.operadora ? ' · ' + op.operadora : ''}</div>
+          <div class="op-desc">${sub}</div>
+        </div>
+        <div class="op-right">
+          <div class="op-valor">${formatarReal(op.valor)}</div>
+          <div class="op-hora">${op.hora}</div>
+        </div>
+        <button class="op-del" onclick="deletar('${op.id}')" title="Remover">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  /*
+    Verifica se o sistema está online.
+    Chama GET /api/status-sistema e atualiza a pílula no header.
+  */
+  async function verificarSistema() {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusTxt');
+    dot.className = 'status-dot checking';
+    txt.textContent = 'verificando...';
+    try {
+      const r = await fetch('/api/status-sistema');
+      const d = await r.json();
+      dot.className = 'status-dot ' + (d.online ? 'online' : 'offline');
+      txt.textContent = d.online ? 'sistema online' : 'sistema fora';
+      if (!d.online) toast('⚠️ Sistema BRB pode estar fora do ar', 'error');
+    } catch {
+      // Se o próprio servidor local cair, cai aqui
+      dot.className = 'status-dot offline';
+      txt.textContent = 'sem conexão';
+    }
+  }
+
+  /*
+    Carrega a meta salva no servidor e renderiza.
+    Chama GET /api/meta
+  */
+  async function carregarMeta() {
+    const r = await fetch('/api/meta');
+    const d = await r.json();
+    metaAtual = d.meta || 0;
+    renderizarMeta(null); // null = vai ler o totalGeral atual da tela
+  }
+
+  /*
+    Salva uma nova meta no servidor.
+    Chama POST /api/meta com { meta: valor }
+  */
+  async function salvarMeta() {
+    const val = parseFloat(document.getElementById('metaInput').value);
+    if (!val || val <= 0) { toast('Informe uma meta válida', 'error'); return; }
+
+    const r = await fetch('/api/meta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ meta: val })
+    });
+
+    if (r.ok) {
+      metaAtual = val;
+      document.getElementById('metaForm').style.display = 'none';
+      document.getElementById('metaInput').value = '';
+      renderizarMeta(null);
+      toast('Meta atualizada ✓');
+    }
+  }
+
+  /*
+    Atualiza visualmente a barra de meta.
+    totalGeral: número atual (ou null para ler da tela).
+  */
+  function renderizarMeta(totalGeral) {
+    // Se totalGeral não foi passado, lê o valor que está na tela
+    const total = totalGeral !== null
+      ? totalGeral
+      : parseFloat(
+          document.getElementById('totalGeral').textContent
+            .replace(/[R$\s.]/g, '')  // remove R$, espaços e pontos
+            .replace(',', '.')         // troca vírgula por ponto (para parseFloat)
+        ) || 0;
+
+    const el = document.getElementById('metaConteudo');
+
+    // Sem meta definida: mostra botão para definir
+    if (!metaAtual) {
+      el.innerHTML = `<div class="meta-sem">Nenhuma meta definida.<br>
+        <button class="meta-edit-btn" style="margin-top:6px" onclick="toggleMetaForm()">+ definir meta</button>
+      </div>`;
+      return;
+    }
+
+    // Calcula percentual (máximo 100%)
+    const pct = Math.min((total / metaAtual) * 100, 100);
+    const bateu = total >= metaAtual;
+    const quase = pct >= 70 && !bateu;
+    const cls = bateu ? 'bateu' : quase ? 'quase' : '';
+
+    // Injeta HTML da barra de progresso
+    el.innerHTML = `
+      <div class="meta-bar-wrap">
+        <div class="meta-bar ${cls}" style="width:${pct.toFixed(1)}%"></div>
+      </div>
+      <div class="meta-info">
+        <span class="meta-pct ${cls}">${pct.toFixed(0)}%${bateu ? ' 🎯' : ''}</span>
+        <span class="meta-valor-str">${formatarReal(total)} / ${formatarReal(metaAtual)}</span>
+      </div>`;
+  }
+
+
+  // -----------------------------------------------------------------------
+  // INICIALIZAÇÃO
+  // Código que roda quando a página carrega.
+  // -----------------------------------------------------------------------
+
+  // Define a data de hoje no seletor de data
+  document.getElementById('dataSel').value = dataHoje();
+
+  // Ao trocar a data, recarrega os dados daquele dia
+  document.getElementById('dataSel').addEventListener('change', carregarDia);
+
+  // Pressionar Enter no campo de valor registra a operação
+  document.getElementById('inputValor').addEventListener('keydown', e => {
+    if (e.key === 'Enter') registrar();
+  });
+
+  // Carrega tudo ao abrir a página
+  carregarDia();
+  carregarMeta();
+  verificarSistema();
+
+  // Verifica o sistema a cada 60 segundos automaticamente
+  setInterval(verificarSistema, 60000);
+
+</script>
+</body>
+</html>
