@@ -1,54 +1,51 @@
-# BRB Caixa 🏦
+# CashFlow Control
 
-Sistema web de controle de caixa desenvolvido para uso interno em conveniências do BRB (Banco de Brasília). O projeto nasceu de uma necessidade real: operadores realizavam a conferência de caixa manualmente ao fim do dia, sem visibilidade do que foi movimentado e sem nenhum aviso quando o sistema do banco ficava fora do ar.
-
----
-
-## 📸 Screenshots
-
-> **Painel vazio — início do dia**
-> ![Painel vazio](img/brb.png)
-
-
-> **Painel com operações registradas**
-> ![Com operações](img/brb2.png)
-
+Sistema web de controle de operacoes de caixa. O projeto ajuda operadores a registrar movimentacoes do dia, acompanhar totais, definir metas e consultar historico sem depender de planilhas ou conferencia manual.
 
 ---
 
-## ✅ Funcionalidades
+## Screenshots
 
-- Registro de operações em tempo real: **saque, depósito, boleto, recarga e outros**
-- Seleção de operadora para recargas (Vivo, TIM, Claro, Oi)
-- **Dashboard com totais do dia** agrupados por tipo de operação
-- **Meta diária** com barra de progresso (azul → âmbar em 70% → verde ao bater)
-- **Monitor de sistema** — verifica se o BRB está online a cada 60 segundos
-- Navegação por datas anteriores para consulta de histórico
-- Dados persistidos localmente em JSON — sem necessidade de banco de dados externo
+> **Painel vazio - inicio do dia**
+> ![Painel vazio](./screenshot/image.png)
+> **Painel com operacoes registradas**
+> ![Com operacoes](./screenshot/cashflow.png)
 
 ---
 
-## 🛠️ Tecnologias
+## Funcionalidades
+
+- Registro de operacoes em tempo real: **saque, deposito, boleto, recarga e outros**
+- Selecao de operadora para recargas (Vivo, TIM, Claro, Oi)
+- **Dashboard com totais do dia** agrupados por tipo de operacao
+- **Meta diaria** com barra de progresso
+- **Monitor de sistema** com verificacao periodica de conectividade
+- Navegacao por datas anteriores para consulta de historico
+- Dados persistidos localmente em JSON, sem necessidade de banco de dados externo
+
+---
+
+## Tecnologias
 
 | Camada | Tecnologia |
 |---|---|
 | Backend | Node.js + Express |
 | Frontend | HTML, CSS e JavaScript puro |
-| Persistência | JSON local (arquivo `data/operacoes.json`) |
-| Fontes | Google Fonts — Plus Jakarta Sans |
+| Persistencia | JSON local (arquivo `data/operacoes.json`) |
+| Fontes | Google Fonts - Plus Jakarta Sans |
 
 ---
 
-## 🚀 Como rodar localmente
+## Como rodar localmente
 
-**Pré-requisito:** ter o [Node.js](https://nodejs.org) instalado.
+**Pre-requisito:** ter o [Node.js](https://nodejs.org) instalado.
 
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/brb-caixa.git
-cd brb-caixa
+# 1. Clone o repositorio
+git clone https://github.com/seu-usuario/cashflow-control.git
+cd cashflow-control
 
-# 2. Instale as dependências
+# 2. Instale as dependencias
 npm install
 
 # 3. Inicie o servidor
@@ -58,58 +55,58 @@ npm start
 http://localhost:3000
 ```
 
-Para desenvolvimento com reload automático:
+Para desenvolvimento com reload automatico:
+
 ```bash
 npm run dev
 ```
 
 ---
 
-## 📁 Estrutura do projeto
+## Estrutura do projeto
 
-```
-brb-caixa/
-├── server.js           # API REST com Express (backend)
-├── public/
-│   └── index.html      # Interface completa (frontend)
-├── data/
-│   └── operacoes.json  # Dados gerados automaticamente
-└── package.json
+```text
+cashflow-control/
+|-- server.js           # API REST com Express (backend)
+|-- public/
+|   `-- index.html      # Interface completa (frontend)
+|-- data/
+|   `-- operacoes.json  # Dados gerados automaticamente
+`-- package.json
 ```
 
 ---
 
-## 🔌 API
+## API
 
-| Método | Rota | Descrição |
+| Metodo | Rota | Descricao |
 |---|---|---|
-| GET | `/api/operacoes?data=YYYY-MM-DD` | Lista operações de um dia |
-| POST | `/api/operacoes` | Registra nova operação |
-| DELETE | `/api/operacoes/:id` | Remove uma operação |
+| GET | `/api/operacoes?data=YYYY-MM-DD` | Lista operacoes de um dia |
+| POST | `/api/operacoes` | Registra nova operacao |
+| DELETE | `/api/operacoes/:id` | Remove uma operacao |
 | GET | `/api/resumo?data=YYYY-MM-DD` | Totais agrupados por tipo |
-| GET | `/api/meta` | Retorna a meta diária |
-| POST | `/api/meta` | Define a meta diária |
-| GET | `/api/status-sistema` | Verifica se o sistema BRB está online |
+| GET | `/api/meta` | Retorna a meta diaria |
+| POST | `/api/meta` | Define a meta diaria |
+| GET | `/api/status-sistema` | Verifica conectividade do sistema |
 | GET | `/api/datas` | Lista datas com registros |
 
 ---
 
-## 💡 Contexto
+## Contexto
 
-Projeto desenvolvido por um operador de conveniência BRB com conhecimento em programação, com o objetivo de automatizar processos internos e ganhar visibilidade sobre a movimentação diária. A escolha por uma stack simples (Node + JS puro) foi intencional — priorizando entrega, manutenibilidade e aprendizado real sobre o funcionamento de uma aplicação web completa do backend ao frontend.
+Projeto desenvolvido para automatizar processos internos de controle de caixa e ganhar visibilidade sobre a movimentacao diaria. A escolha por uma stack simples (Node + JS puro) foi intencional, priorizando entrega, manutencao e facilidade de evolucao.
 
 ---
 
-## 📌 Próximas melhorias
+## Proximas melhorias
 
 - [ ] Exportar fechamento de caixa em PDF
-- [ ] Notificação via WhatsApp quando o sistema cair
-- [ ] Gráfico de evolução semanal
-- [ ] Autenticação por senha
+- [ ] Notificacao quando o sistema cair
+- [ ] Grafico de evolucao semanal
+- [ ] Autenticacao por senha
 
 ---
 
-## 👤 Autor
+## Autor
 
-Feito por **David** — operador de conveniência BRB e desenvolvedor em formação.  
-
+Feito por **David**.

@@ -1,6 +1,6 @@
 /*
   =====================================================================
-  BRB CAIXA — server.js
+  CashFlow Control — server.js
   =====================================================================
   Este arquivo é o BACKEND da aplicação.
   Backend = o servidor que roda no seu computador, recebe as
@@ -352,7 +352,7 @@ app.post('/api/meta', (req, res) => {
 
 // ---------------------------------------------------------------------
 // GET /api/status-sistema
-// Testa se o site do BRB responde — indicador de "sistema online".
+// Testa se um serviço externo responde — indicador de "sistema online".
 // ---------------------------------------------------------------------
 app.get('/api/status-sistema', (req, res) => {
   /*
@@ -370,7 +370,7 @@ app.get('/api/status-sistema', (req, res) => {
     (r) => { ... } é o callback chamado quando a resposta chega.
     r.statusCode → código HTTP da resposta (200, 404, 500, etc.)
   */
-  const req2 = https.get('https://www.brb.com.br', (r) => {
+  const req2 = https.get('https://www.google.com/generate_204', (r) => {
     res.json({
       online: true,
       statusCode: r.statusCode,
@@ -431,5 +431,5 @@ app.get('/api/datas', (req, res) => {
   Só a partir daqui o servidor aceita requisições.
 */
 app.listen(PORT, () => {
-  console.log('\n BRB Caixa rodando em http://localhost:' + PORT + '\n');
+  console.log('\n CashFlow Control rodando em http://localhost:' + PORT + '\n');
 });

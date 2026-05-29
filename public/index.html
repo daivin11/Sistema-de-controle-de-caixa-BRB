@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   =====================================================================
-  BRB CAIXA — index.html
+  CashFlow Control — index.html
   =====================================================================
   Este arquivo é o FRONTEND completo da aplicação.
   Frontend = tudo que o usuário vê e interage no navegador.
@@ -20,7 +20,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BRB Caixa — Conveniência</title>
+  <title>CashFlow Control</title>
 
   <!--
     Google Fonts: importa a fonte "Plus Jakarta Sans" da internet.
@@ -37,15 +37,15 @@
       Definidas no :root (raiz do documento), ficam disponíveis em
       todo o CSS com a função var(--nome-da-variavel).
 
-      Vantagem: se quiser mudar a cor azul do BRB, muda só aqui
+      Vantagem: se quiser mudar a cor azul principal, muda só aqui
       e afeta o site inteiro automaticamente.
     */
     :root {
-      --brb-blue: #003F8A;          /* azul principal do BRB */
-      --brb-blue-dark: #002d63;     /* azul mais escuro (hover) */
-      --brb-blue-light: #e8f0fb;    /* azul bem claro (fundo de badges) */
-      --brb-yellow: #F5A800;        /* amarelo/dourado do BRB */
-      --brb-yellow-light: #fff8e6;  /* amarelo clarinho */
+      --brand-blue: #003F8A;        /* azul principal */
+      --brand-blue-dark: #002d63;   /* azul mais escuro (hover) */
+      --brand-blue-light: #e8f0fb;  /* azul bem claro (fundo de badges) */
+      --brand-accent: #7dd3fc;      /* azul claro de destaque */
+      --brand-accent-light: #eef9ff;/* azul clarinho */
       --bg: #F0F3F8;                /* fundo geral da página */
       --surface: #ffffff;           /* fundo de cards/painéis */
       --surface2: #f7f9fc;          /* fundo de inputs */
@@ -88,7 +88,7 @@
       e centralizados verticalmente.
     */
     header {
-      background: var(--brb-blue);
+      background: var(--brand-blue);
       padding: 0 28px;
       display: flex;
       align-items: center;
@@ -102,19 +102,21 @@
 
     .logo { display: flex; align-items: center; gap: 12px; }
 
-    /* Badge amarelo com "BRB" */
+    /* Badge da identidade do projeto */
     .logo-badge {
-      background: var(--brb-yellow);
-      color: var(--brb-blue-dark);
+      background: linear-gradient(135deg, var(--brand-accent), #ffffff);
+      color: var(--brand-blue-dark);
       font-weight: 700;
       font-size: 15px;
       letter-spacing: 0.04em;
       padding: 4px 10px;
       border-radius: 6px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
     }
 
-    .logo-title { color: #fff; font-size: 15px; font-weight: 500; opacity: 0.9; }
-    .logo-sep { color: rgba(255,255,255,0.3); margin: 0 2px; }
+    .logo-copy { display: flex; flex-direction: column; min-width: 0; }
+    .logo-title { color: #fff; font-size: 15px; font-weight: 700; opacity: 0.95; line-height: 1.1; white-space: nowrap; }
+    .logo-subtitle { color: rgba(255,255,255,0.62); font-size: 11px; font-weight: 500; margin-top: 2px; white-space: nowrap; }
 
     .header-right { display: flex; align-items: center; gap: 14px; }
 
@@ -132,7 +134,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .date-selector input:focus { border-color: var(--brb-yellow); }
+    .date-selector input:focus { border-color: var(--brand-accent); }
 
     /* Pílula de status do sistema */
     .status-pill {
@@ -151,7 +153,7 @@
     .status-dot.offline { background: #f87171; box-shadow: 0 0 6px #f87171; }
     .status-dot.checking {
       animation: blink 1s infinite; /* pisca enquanto verifica */
-      background: var(--brb-yellow);
+      background: var(--brand-accent);
     }
 
     /* Animação de piscar */
@@ -210,11 +212,11 @@
       transition: all 0.15s; /* animação suave em todas as propriedades */
       font-size: 10px; font-weight: 600; letter-spacing: 0.01em;
     }
-    .tipo-btn:hover { border-color: var(--brb-blue); color: var(--brb-blue); background: var(--brb-blue-light); }
+    .tipo-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); background: var(--brand-blue-light); }
     .tipo-icon { font-size: 17px; display: block; margin-bottom: 4px; }
 
     /* Cada tipo tem sua própria cor quando ativo */
-    .tipo-btn[data-tipo="saque"].active    { color: var(--brb-blue); border-color: var(--brb-blue); background: var(--brb-blue-light); }
+    .tipo-btn[data-tipo="saque"].active    { color: var(--brand-blue); border-color: var(--brand-blue); background: var(--brand-blue-light); }
     .tipo-btn[data-tipo="deposito"].active { color: var(--green);    border-color: var(--green);    background: var(--green-bg); }
     .tipo-btn[data-tipo="boleto"].active   { color: var(--amber);    border-color: var(--amber);    background: var(--amber-bg); }
     .tipo-btn[data-tipo="recarga"].active  { color: var(--purple);   border-color: var(--purple);   background: var(--purple-bg); }
@@ -231,7 +233,7 @@
       font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; outline: none;
       transition: border-color 0.15s;
     }
-    .form-input:focus { border-color: var(--brb-blue); background: #fff; }
+    .form-input:focus { border-color: var(--brand-blue); background: #fff; }
     .form-input::placeholder { color: #b0bad0; }
 
     /* Input de valor com prefixo "R$" sobreposto */
@@ -243,7 +245,7 @@
     }
     .valor-input-wrap .form-input {
       padding-left: 30px; /* espaço para o "R$" não sobrepor o texto */
-      font-size: 18px; font-weight: 700; color: var(--brb-blue);
+      font-size: 18px; font-weight: 700; color: var(--brand-blue);
     }
 
     /* Linha de operadoras (só aparece quando tipo = recarga) */
@@ -262,28 +264,28 @@
     /* Botão principal de registrar */
     .btn-registrar {
       width: 100%; padding: 11px; border-radius: 9px;
-      background: var(--brb-blue); border: none; color: #fff;
+      background: var(--brand-blue); border: none; color: #fff;
       font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
       cursor: pointer; letter-spacing: 0.02em;
       transition: background 0.15s, transform 0.1s;
       display: flex; align-items: center; justify-content: center; gap: 7px;
     }
-    .btn-registrar:hover  { background: var(--brb-blue-dark); }
+    .btn-registrar:hover  { background: var(--brand-blue-dark); }
     .btn-registrar:active { transform: scale(0.98); } /* encolhe levemente ao clicar */
 
     /* Card azul de total do dia */
     .resumo-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    .total-card { background: var(--brb-blue); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+    .total-card { background: var(--brand-blue); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
     .total-card .tc-label { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
     .total-card .tc-valor { font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
-    .total-card .tc-stripe { width: 32px; height: 3px; background: var(--brb-yellow); border-radius: 2px; margin-top: 10px; }
+    .total-card .tc-stripe { width: 32px; height: 3px; background: var(--brand-accent); border-radius: 2px; margin-top: 10px; }
 
     /* Mini-cards de resumo por tipo (grid 2x2) */
     .mini-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
     .mini-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; }
     .mini-card .mc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
     .mini-card .mc-valor { font-size: 14px; font-weight: 700; }
-    .mc-saque   { color: var(--brb-blue); }
+    .mc-saque   { color: var(--brand-blue); }
     .mc-deposito{ color: var(--green); }
     .mc-boleto  { color: var(--amber); }
     .mc-recarga { color: var(--purple); }
@@ -296,22 +298,22 @@
       cursor: pointer; font-size: 11px; font-weight: 600; padding: 3px 9px;
       border-radius: 5px; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
     }
-    .meta-edit-btn:hover { border-color: var(--brb-blue); color: var(--brb-blue); }
+    .meta-edit-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
 
     /* Barra de progresso da meta */
     .meta-bar-wrap { background: var(--border); border-radius: 99px; height: 7px; overflow: hidden; margin-bottom: 7px; }
     .meta-bar {
       height: 100%; border-radius: 99px;
-      background: var(--brb-blue);
+      background: var(--brand-blue);
       /* transition faz a barra crescer suavemente ao atualizar */
       transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.3s;
       width: 0%; /* começa em 0, JS atualiza via style="width:X%" */
     }
-    .meta-bar.quase { background: var(--brb-yellow); } /* 70~99% */
+    .meta-bar.quase { background: var(--brand-accent); } /* 70~99% */
     .meta-bar.bateu { background: var(--green); }       /* 100% */
 
     .meta-info { display: flex; justify-content: space-between; }
-    .meta-pct { font-size: 13px; font-weight: 700; color: var(--brb-blue); }
+    .meta-pct { font-size: 13px; font-weight: 700; color: var(--brand-blue); }
     .meta-pct.quase { color: var(--amber); }
     .meta-pct.bateu { color: var(--green); }
     .meta-valor-str { font-size: 11px; color: var(--muted); }
@@ -322,9 +324,9 @@
       color: var(--text); padding: 7px 10px; border-radius: 7px;
       font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; outline: none;
     }
-    .meta-form input:focus { border-color: var(--brb-blue); }
+    .meta-form input:focus { border-color: var(--brand-blue); }
     .meta-form button {
-      background: var(--brb-yellow); border: none; color: var(--brb-blue-dark);
+      background: var(--brand-accent); border: none; color: var(--brand-blue-dark);
       padding: 7px 14px; border-radius: 7px; cursor: pointer;
       font-size: 12px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
       transition: opacity 0.15s;
@@ -351,7 +353,7 @@
     .bc-tipo  { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
     .bc-valor { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
     .bc-qtd   { font-size: 11px; color: var(--muted); }
-    .bc-saque   { color: var(--brb-blue); }
+    .bc-saque   { color: var(--brand-blue); }
     .bc-deposito{ color: var(--green); }
     .bc-boleto  { color: var(--amber); }
     .bc-recarga { color: var(--purple); }
@@ -381,7 +383,7 @@
 
     /* Ícone colorido à esquerda de cada operação */
     .op-badge { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .bg-saque   { background: var(--brb-blue-light); }
+    .bg-saque   { background: var(--brand-blue-light); }
     .bg-deposito{ background: var(--green-bg); }
     .bg-boleto  { background: var(--amber-bg); }
     .bg-recarga { background: var(--purple-bg); }
@@ -405,7 +407,7 @@
     .op-del:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
 
     /* Classes de cor por tipo (usadas dinamicamente no JS) */
-    .tipo-saque   { color: var(--brb-blue); }
+    .tipo-saque   { color: var(--brand-blue); }
     .tipo-deposito{ color: var(--green); }
     .tipo-boleto  { color: var(--amber); }
     .tipo-recarga { color: var(--purple); }
@@ -419,7 +421,7 @@
     /* Toast (notificação temporária no canto da tela) */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
-      background: var(--brb-blue); color: #fff;
+      background: var(--brand-blue); color: #fff;
       padding: 10px 18px; border-radius: 9px;
       font-size: 13px; font-weight: 500; z-index: 999;
       transform: translateY(20px); opacity: 0; /* começa invisível e abaixo */
@@ -439,8 +441,11 @@
 -->
 <header>
   <div class="logo">
-    <span class="logo-badge">BRB</span>
-    <span class="logo-title">Conveniência<span class="logo-sep"> / </span>Caixa</span>
+    <span class="logo-badge">CF</span>
+    <span class="logo-copy">
+      <span class="logo-title">CashFlow Control</span>
+      <span class="logo-subtitle">Controle de Operações</span>
+    </span>
   </div>
   <div class="header-right">
     <!-- Input de data: ao trocar, JS chama carregarDia() -->
@@ -856,7 +861,7 @@
       const d = await r.json();
       dot.className = 'status-dot ' + (d.online ? 'online' : 'offline');
       txt.textContent = d.online ? 'sistema online' : 'sistema fora';
-      if (!d.online) toast('⚠️ Sistema BRB pode estar fora do ar', 'error');
+      if (!d.online) toast('⚠️ Sistema pode estar fora do ar', 'error');
     } catch {
       // Se o próprio servidor local cair, cai aqui
       dot.className = 'status-dot offline';
